@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">vISIONeYe Hub</string>
+    <string name="title_admin_dashboard">vISIONeYe Hub</string>
+    <string name="title_user_details">Customer Details</string>
+    <string name="action_search_users">Search users by name, email, role…</string>
+    <string name="action_account_activation">Account Status</string>
+    <string name="action_delete_user">Delete User</string>
+    <string name="action_update_credentials">Update Credentials</string>
+    <string name="action_save_changes">Save Changes</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="msg_confirm_delete">Are you sure you want to permanently delete this user from Firebase Database?</string>
+</resources>

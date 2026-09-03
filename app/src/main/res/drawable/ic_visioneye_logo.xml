@@ -1,0 +1,107 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Outer Glow / Ambient Blur Halo -->
+    <path
+        android:pathData="M54,26 C30,26 14,48 10,54 C14,60 30,82 54,82 C78,82 94,60 98,54 C94,48 78,26 54,26 Z"
+        android:strokeWidth="6"
+        android:strokeAlpha="0.25">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:startX="10"
+                android:startY="54"
+                android:endX="98"
+                android:endY="54"
+                android:type="linear">
+                <item android:color="#00C7BE" android:offset="0.0" />
+                <item android:color="#007AFF" android:offset="0.5" />
+                <item android:color="#5856D6" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Sleek Eye Outline -->
+    <path
+        android:pathData="M54,28 C32,28 16,49 12,54 C16,59 32,80 54,80 C76,80 92,59 96,54 C92,49 76,28 54,28 Z"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:startX="12"
+                android:startY="54"
+                android:endX="96"
+                android:endY="54"
+                android:type="linear">
+                <item android:color="#00E5FF" android:offset="0.0" />
+                <item android:color="#007AFF" android:offset="0.6" />
+                <item android:color="#7000FF" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Outer Iris Ring -->
+    <path
+        android:pathData="M54,36 A18,18 0 1,0 54,72 A18,18 0 1,0 54,36 Z"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:startX="36"
+                android:startY="36"
+                android:endX="72"
+                android:endY="72"
+                android:type="linear">
+                <item android:color="#00E5FF" android:offset="0.0" />
+                <item android:color="#5856D6" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Inner Glowing Iris Fill -->
+    <path
+        android:pathData="M54,42 A12,12 0 1,0 54,66 A12,12 0 1,0 54,42 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:centerX="54"
+                android:centerY="54"
+                android:gradientRadius="14"
+                android:type="radial">
+                <item android:color="#00E5FF" android:offset="0.0" />
+                <item android:color="#007AFF" android:offset="0.75" />
+                <item android:color="#1A2D69" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Pupil Core -->
+    <path
+        android:pathData="M54,48 A6,6 0 1,0 54,60 A6,6 0 1,0 54,48 Z"
+        android:fillColor="#090E17" />
+
+    <!-- Vision Core Gleam (Apple Glass Specular Dot) -->
+    <path
+        android:pathData="M51.5,49 A2.5,2.5 0 1,0 51.5,54 A2.5,2.5 0 1,0 51.5,49 Z"
+        android:fillColor="#FFFFFF" />
+
+    <path
+        android:pathData="M56.5,56 A1.2,1.2 0 1,0 56.5,58.4 A1.2,1.2 0 1,0 56.5,56 Z"
+        android:fillColor="#80FFFFFF" />
+
+    <!-- Left & Right Vision Beam Accents -->
+    <path
+        android:pathData="M2,54 L12,54"
+        android:strokeColor="#00E5FF"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round" />
+
+    <path
+        android:pathData="M96,54 L106,54"
+        android:strokeColor="#7000FF"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round" />
+</vector>
