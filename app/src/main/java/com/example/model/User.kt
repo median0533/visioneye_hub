@@ -117,9 +117,21 @@ data class User(
             else -> "User ${userId.take(6)}"
         }
 
-    // Show mobile number as it is in Firebase without adding extra logic
+    // Show clean, full mobile number gracefully with country code if present
     val fullMobileNumber: String
-        get() = if (mobileNumber.isNotBlank()) mobileNumber.trim() else "Not Available"
+        get() {
+            val num = mobileNumber.trim()
+            val code = countryCode.trim()
+            return when {
+                num.isBlank() -> "Not Available"
+                num.startsWith("+") -> num
+                code.isNotBlank() -> {
+                    val formattedCode = if (code.startsWith("+")) code else "+$code"
+                    if (num.startsWith(formattedCode)) num else "$formattedCode$num"
+                }
+                else -> num
+            }
+        }
 
     // Helper for avatar initials
     val initials: String

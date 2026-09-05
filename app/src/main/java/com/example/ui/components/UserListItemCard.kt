@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.HourglassTop
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.StopCircle
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.Card
@@ -31,6 +32,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -314,6 +316,33 @@ fun UserListItemCard(
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
+                    }
+                }
+
+                // Clean Registration Date display
+                if (user.createdAt > 0) {
+                    val formattedDate = remember(user.createdAt) {
+                        java.text.SimpleDateFormat("MMM dd, yyyy • hh:mm a", java.util.Locale.getDefault())
+                            .format(java.util.Date(user.createdAt))
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(5.dp),
+                        modifier = Modifier.padding(top = 2.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Schedule,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f),
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Text(
+                            text = "Joined: $formattedDate",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.outline
+                            )
+                        )
                     }
                 }
             }

@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.LocationCity
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
@@ -61,10 +62,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.model.User
 import com.example.model.UserStatus
 import com.example.ui.theme.StatusActiveGreen
@@ -77,6 +80,7 @@ import com.example.ui.theme.StatusSuspendedRed
 import com.example.ui.theme.StatusSuspendedRedBg
 import com.example.ui.theme.StatusSuspendedRedBorder
 import com.example.ui.theme.VisionEyeBlue
+import com.example.util.ExcelExporter
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -181,6 +185,40 @@ fun UserDetailSheet(
                                 color = StatusSuspendedRed
                             )
                         }
+                    }
+
+                    // Export button: Exports Excel file with filename vISIONeYe_Users_<timestamp>.csv
+                    Button(
+                        onClick = {
+                            ExcelExporter.exportUsersToExcel(
+                                context = context,
+                                users = listOf(user),
+                                fileNamePrefix = "vISIONeYe_Users"
+                            )
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF107C41), // Microsoft Excel Emerald Green
+                            contentColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                        modifier = Modifier
+                            .height(38.dp)
+                            .testTag("btn_topbar_export_customer")
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_excel_xls),
+                            contentDescription = "Export Excel",
+                            modifier = Modifier.size(18.dp),
+                            tint = Color.White
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Export",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.White
+                        )
                     }
 
                     // Edit / Update button: always available in top bar

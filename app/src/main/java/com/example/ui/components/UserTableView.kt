@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -28,16 +29,20 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.model.User
 import com.example.ui.theme.GlassBorderLight
 import com.example.ui.theme.GlassBorderStroke
@@ -45,6 +50,7 @@ import com.example.ui.theme.GlassSurfaceElevated
 import com.example.ui.theme.GlassSurfaceLight
 import com.example.ui.theme.StatusSuspendedRed
 import com.example.ui.theme.VisionEyeBlue
+import com.example.util.ExcelExporter
 
 @Composable
 fun UserTableView(
@@ -54,6 +60,7 @@ fun UserTableView(
     onDeleteClick: (User) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val horizontalScrollState = rememberScrollState()
 
     Card(
@@ -93,8 +100,9 @@ fun UserTableView(
                 TableHeaderCell(text = "Mobile Number", width = 160.dp)
                 TableHeaderCell(text = "Company", width = 170.dp)
                 TableHeaderCell(text = "Country", width = 130.dp)
+                TableHeaderCell(text = "Registration Date", width = 170.dp)
                 TableHeaderCell(text = "Status", width = 110.dp)
-                TableHeaderCell(text = "Actions", width = 110.dp)
+                TableHeaderCell(text = "Actions", width = 145.dp)
             }
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f))
@@ -185,17 +193,54 @@ fun UserTableView(
                         overflow = TextOverflow.Ellipsis
                     )
 
-                    // 6. Status
+                    // 6. Registration Date
+                    val dateFormatted = remember(user.createdAt) {
+                        if (user.createdAt > 0) {
+                            java.text.SimpleDateFormat("yyyy-MM-dd hh:mm a", java.util.Locale.getDefault())
+                                .format(java.util.Date(user.createdAt))
+                        } else "—"
+                    }
+                    Text(
+                        text = dateFormatted,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.width(170.dp),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    // 7. Status
                     Box(modifier = Modifier.width(110.dp)) {
                         UserStatusBadge(user = user)
                     }
 
-                    // 7. Actions (Edit, Delete)
+                    // 7. Actions (Export, Edit, Delete)
                     Row(
-                        modifier = Modifier.width(110.dp),
+                        modifier = Modifier.width(145.dp),
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        // Export user Excel file with filename vISIONeYe_Users_<timestamp>.csv
+                        IconButton(
+                            onClick = {
+                                ExcelExporter.exportUsersToExcel(
+                                    context = context,
+                                    users = listOf(user),
+                                    fileNamePrefix = "vISIONeYe_Users"
+                                )
+                            },
+                            modifier = Modifier
+                                .size(32.dp)
+                                .testTag("btn_table_export_${user.userId}")
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_excel_xls),
+                                contentDescription = "Export User",
+                                tint = Color(0xFF107C41), // Excel emerald green
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+
                         IconButton(
                             onClick = { onEditClick(user) },
                             modifier = Modifier

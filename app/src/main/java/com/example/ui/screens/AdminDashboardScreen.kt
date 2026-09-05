@@ -27,9 +27,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.CloudQueue
+import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.PersonSearch
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
@@ -43,9 +45,11 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -73,6 +77,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -93,11 +98,14 @@ import com.example.ui.theme.GlassBorderStroke
 import com.example.ui.theme.GlassSurfaceElevated
 import com.example.ui.theme.GlassSurfaceLight
 import com.example.ui.theme.StatusActiveGreen
+import com.example.ui.theme.StatusSuspendedRed
 import com.example.ui.theme.VisionEyeBlue
+import com.example.util.ExcelExporter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminDashboardScreen(
+    onLogout: () -> Unit = {},
     viewModel: AdminUserViewModel = viewModel(),
     modifier: Modifier = Modifier
 ) {
@@ -123,12 +131,12 @@ fun AdminDashboardScreen(
                 title = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         // vISIONeYe Iris Vector Logo
                         Box(
                             modifier = Modifier
-                                .size(40.dp)
+                                .size(36.dp)
                                 .clip(CircleShape)
                                 .background(
                                     Brush.linearGradient(
@@ -144,34 +152,37 @@ fun AdminDashboardScreen(
                             Image(
                                 painter = painterResource(id = R.drawable.ic_visioneye_logo),
                                 contentDescription = "vISIONeYe Logo",
-                                modifier = Modifier.size(28.dp)
+                                modifier = Modifier.size(24.dp)
                             )
                         }
 
-                        Column {
+                        Column(modifier = Modifier.weight(1f, fill = false)) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                horizontalArrangement = Arrangement.spacedBy(5.dp)
                             ) {
                                 Text(
-                                    text = "vISIONeYe Hub",
-                                    style = MaterialTheme.typography.titleLarge.copy(
+                                    text = "vISIONeYe",
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    style = MaterialTheme.typography.titleMedium.copy(
                                         fontWeight = FontWeight.ExtraBold,
-                                        letterSpacing = (-0.3).sp
+                                        letterSpacing = (-0.2).sp
                                     )
                                 )
 
                                 Box(
                                     modifier = Modifier
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .background(VisionEyeBlue.copy(alpha = 0.12f))
-                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(VisionEyeBlue.copy(alpha = 0.15f))
+                                        .border(0.5.dp, VisionEyeBlue.copy(alpha = 0.35f), RoundedCornerShape(4.dp))
+                                        .padding(horizontal = 5.dp, vertical = 1.dp)
                                 ) {
                                     Text(
                                         text = "Admin",
                                         style = MaterialTheme.typography.labelSmall.copy(
                                             fontWeight = FontWeight.Bold,
-                                            fontSize = 9.5.sp,
+                                            fontSize = 9.sp,
                                             color = VisionEyeBlue
                                         )
                                     )
@@ -180,9 +191,11 @@ fun AdminDashboardScreen(
 
                             Text(
                                 text = "Admin Portal",
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
                                 style = MaterialTheme.typography.labelSmall.copy(
-                                    fontSize = 11.5.sp,
-                                    fontWeight = FontWeight.Medium
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Normal
                                 ),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -190,31 +203,108 @@ fun AdminDashboardScreen(
                     }
                 },
                 actions = {
-                    // Toggle Table / Card view
-                    IconButton(
-                        onClick = { viewModel.toggleTableView() },
-                        modifier = Modifier.testTag("btn_toggle_view")
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(start = 8.dp, end = 12.dp)
                     ) {
-                        Icon(
-                            imageVector = if (state.isTableView) Icons.Default.ViewAgenda else Icons.Default.TableChart,
-                            contentDescription = "Toggle View Mode",
-                            tint = VisionEyeBlue
-                        )
-                    }
+                        // 1. Export to Excel Button
+                        FilledTonalIconButton(
+                            onClick = {
+                                val usersToExport = if (state.filteredUsers.isNotEmpty()) {
+                                    state.filteredUsers
+                                } else {
+                                    state.allUsers
+                                }
+                                if (usersToExport.isEmpty()) {
+                                    Toast.makeText(context, "No user data available to export", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    ExcelExporter.exportUsersToExcel(
+                                        context = context,
+                                        users = usersToExport,
+                                        fileNamePrefix = "vISIONeYe_Users"
+                                    )
+                                }
+                            },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .testTag("btn_export_excel"),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                containerColor = Color(0x18107C41),
+                                contentColor = Color(0xFF107C41)
+                            )
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_excel_xls),
+                                contentDescription = "Export to Excel",
+                                modifier = Modifier.size(18.dp),
+                                tint = Color(0xFF107C41)
+                            )
+                        }
 
-                    // Refresh Button
-                    IconButton(
-                        onClick = {
-                            Toast.makeText(context, "Refresh data", Toast.LENGTH_SHORT).show()
-                            viewModel.refreshUsers()
-                        },
-                        modifier = Modifier.testTag("btn_refresh_users")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = "Refresh Database",
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
+                        // 2. Toggle Table / Card view
+                        FilledTonalIconButton(
+                            onClick = { viewModel.toggleTableView() },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .testTag("btn_toggle_view"),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                containerColor = VisionEyeBlue.copy(alpha = 0.12f),
+                                contentColor = VisionEyeBlue
+                            )
+                        ) {
+                            Icon(
+                                imageVector = if (state.isTableView) Icons.Default.ViewAgenda else Icons.Default.TableChart,
+                                contentDescription = "Toggle View Mode",
+                                modifier = Modifier.size(18.dp),
+                                tint = VisionEyeBlue
+                            )
+                        }
+
+                        // 3. Refresh Button
+                        FilledTonalIconButton(
+                            onClick = {
+                                Toast.makeText(context, "Refreshing data...", Toast.LENGTH_SHORT).show()
+                                viewModel.refreshUsers()
+                            },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .testTag("btn_refresh_users"),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                containerColor = Color(0x14FFFFFF),
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "Refresh Database",
+                                modifier = Modifier.size(18.dp),
+                                tint = Color.White.copy(alpha = 0.9f)
+                            )
+                        }
+
+                        // 4. Logout Button
+                        FilledTonalIconButton(
+                            onClick = onLogout,
+                            modifier = Modifier
+                                .size(36.dp)
+                                .testTag("btn_logout"),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                containerColor = StatusSuspendedRed.copy(alpha = 0.14f),
+                                contentColor = StatusSuspendedRed
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Logout,
+                                contentDescription = "Sign Out",
+                                modifier = Modifier.size(18.dp),
+                                tint = StatusSuspendedRed
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

@@ -1,0 +1,60 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+
+    <!-- Document Page Outline with Folded Corner and Gap for XLS Badge -->
+    <path
+        android:strokeColor="#FF107C41"
+        android:strokeWidth="2.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000"
+        android:pathData="M8,4 H28 L39,15 V19 M39,35 V42 C39,43.1 38.1,44 37,44 H9 C7.9,44 7,43.1 7,42 V6 C7,4.9 7.9,4 9,4 Z" />
+
+    <!-- Document Fold Flap -->
+    <path
+        android:strokeColor="#FF107C41"
+        android:strokeWidth="2.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000"
+        android:pathData="M28,4 V15 H39" />
+
+    <!-- XLS Badge Container Rectangle -->
+    <path
+        android:strokeColor="#FF107C41"
+        android:strokeWidth="2.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000"
+        android:pathData="M14,19 H43 C43.6,19 44,19.4 44,20 V34 C44,34.6 43.6,35 43,35 H14 C13.4,35 13,34.6 13,34 V20 C13,19.4 13.4,19 14,19 Z" />
+
+    <!-- Letter 'X' -->
+    <path
+        android:strokeColor="#FF107C41"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000"
+        android:pathData="M18,23.5 L24,30.5 M24,23.5 L18,30.5" />
+
+    <!-- Letter 'L' -->
+    <path
+        android:strokeColor="#FF107C41"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000"
+        android:pathData="M28,23.5 V30.5 H33" />
+
+    <!-- Letter 'S' -->
+    <path
+        android:strokeColor="#FF107C41"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000"
+        android:pathData="M39,24.5 C39,23.5 36.5,23.2 35.5,24.2 C34.5,25.2 35.2,26.5 36.5,26.9 L37.2,27.1 C38.5,27.5 39.2,28.2 39.2,29.3 C39.2,30.6 37.8,31 36.5,31 C35,31 34.2,30.2 34.2,29.5" />
+</vector>

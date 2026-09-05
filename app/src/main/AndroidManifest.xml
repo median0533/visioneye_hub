@@ -10,6 +10,26 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
+    <!-- Queries for explicit support of Microsoft Excel, Google Sheets, and spreadsheet handlers -->
+    <queries>
+        <package android:name="com.microsoft.office.excel" />
+        <package android:name="com.google.android.apps.docs.editors.sheets" />
+        <package android:name="com.microsoft.office.officehubrow" />
+        <package android:name="cn.wps.moffice_eng" />
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:mimeType="text/csv" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:mimeType="application/vnd.ms-excel" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.SEND" />
+            <data android:mimeType="text/csv" />
+        </intent>
+    </queries>
+
     <application
         android:name=".AdminApplication"
         android:allowBackup="true"
@@ -50,6 +70,17 @@
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
+
+        <!-- FileProvider for securely sharing exported Excel files with Microsoft Excel, Google Sheets, etc. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 
 </manifest>

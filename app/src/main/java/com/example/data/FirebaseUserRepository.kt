@@ -446,9 +446,27 @@ class FirebaseUserRepository(
         return when (value) {
             is com.google.firebase.Timestamp -> value.toDate().time
             is java.util.Date -> value.time
-            is Number -> value.toLong()
+            is Number -> {
+                val num = value.toLong()
+                // If timestamp is in seconds (e.g. 10 digits ~ 1.7e9), convert to milliseconds
+                if (num in 1_000_000_000L..99_999_999_999L) {
+                    num * 1000L
+                } else {
+                    num
+                }
+            }
             is String -> {
-                value.toLongOrNull() ?: parseIso8601ToEpochMilli(value)
+                val trimmed = value.trim()
+                val longVal = trimmed.toLongOrNull()
+                if (longVal != null) {
+                    if (longVal in 1_000_000_000L..99_999_999_999L) {
+                        longVal * 1000L
+                    } else {
+                        longVal
+                    }
+                } else {
+                    parseDateStringToEpochMilli(trimmed)
+                }
             }
             else -> null
         }
@@ -458,22 +476,38 @@ class FirebaseUserRepository(
         return parseTimestampNullable(value) ?: System.currentTimeMillis()
     }
 
-    private fun parseIso8601ToEpochMilli(value: String): Long? {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+    private fun parseDateStringToEpochMilli(value: String): Long? {
+        if (value.isBlank()) return null
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             try {
-                Instant.parse(value).toEpochMilli()
-            } catch (_: Exception) {
-                null
-            }
-        } else {
-            try {
-                SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).apply {
-                    timeZone = TimeZone.getTimeZone("UTC")
-                }.parse(value)?.time
-            } catch (_: Exception) {
-                null
-            }
+                return Instant.parse(value).toEpochMilli()
+            } catch (_: Exception) { }
         }
+
+        val formats = listOf(
+            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+            "yyyy-MM-dd'T'HH:mm:ss'Z'",
+            "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+            "yyyy-MM-dd'T'HH:mm:ssZ",
+            "yyyy-MM-dd HH:mm:ss",
+            "yyyy-MM-dd",
+            "dd-MM-yyyy HH:mm:ss",
+            "dd-MM-yyyy",
+            "dd/MM/yyyy HH:mm:ss",
+            "dd/MM/yyyy",
+            "MMM dd, yyyy hh:mm:ss a",
+            "MMM dd, yyyy"
+        )
+        for (pattern in formats) {
+            try {
+                val sdf = SimpleDateFormat(pattern, Locale.US).apply {
+                    timeZone = if (pattern.endsWith("'Z'")) TimeZone.getTimeZone("UTC") else TimeZone.getDefault()
+                }
+                val d = sdf.parse(value)
+                if (d != null) return d.time
+            } catch (_: Exception) { }
+        }
+        return null
     }
 
     private fun generateAvatarColor(id: String, seed: String): String {
