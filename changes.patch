@@ -1,0 +1,148 @@
+diff --git a/app/build.gradle.kts b/app/build.gradle.kts
+index 699f121..69484cb 100644
+--- a/app/build.gradle.kts
++++ b/app/build.gradle.kts
+@@ -31,11 +31,14 @@ android {
+       keyAlias = "upload"
+       keyPassword = System.getenv("KEY_PASSWORD")
+     }
+-    create("debugConfig") {
+-      storeFile = file("${rootDir}/debug.keystore")
+-      storePassword = "android"
+-      keyAlias = "androiddebugkey"
+-      keyPassword = "android"
++    val debugKeystoreFile = file("${rootDir}/debug.keystore")
++    if (debugKeystoreFile.exists()) {
++      create("debugConfig") {
++        storeFile = debugKeystoreFile
++        storePassword = "android"
++        keyAlias = "androiddebugkey"
++        keyPassword = "android"
++      }
+     }
+   }
+ 
+@@ -46,7 +49,12 @@ android {
+       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+       signingConfig = signingConfigs.getByName("release")
+     }
+-    debug { signingConfig = signingConfigs.getByName("debugConfig") }
++    debug {
++      val customDebugConfig = signingConfigs.findByName("debugConfig")
++      if (customDebugConfig != null) {
++        signingConfig = customDebugConfig
++      }
++    }
+   }
+   compileOptions {
+     sourceCompatibility = JavaVersion.VERSION_11
+@@ -80,6 +88,7 @@ dependencies {
+   implementation(platform(libs.firebase.bom))
+   // implementation(libs.accompanist.permissions)
+   implementation(libs.androidx.activity.compose)
++  implementation(libs.androidx.fragment.ktx)
+   // implementation(libs.androidx.camera.camera2)
+   // implementation(libs.androidx.camera.core)
+   // implementation(libs.androidx.camera.lifecycle)
+diff --git a/app/src/main/java/com/example/data/FirebaseUserRepository.kt b/app/src/main/java/com/example/data/FirebaseUserRepository.kt
+index f9eb7e2..00e33a7 100644
+--- a/app/src/main/java/com/example/data/FirebaseUserRepository.kt
++++ b/app/src/main/java/com/example/data/FirebaseUserRepository.kt
+@@ -1,6 +1,7 @@
+ package com.example.data
+ 
+ import android.content.Context
++import android.os.Build
+ import android.util.Log
+ import com.example.AdminApplication
+ import com.example.model.FirebaseConfigInfo
+@@ -20,6 +21,10 @@ import kotlinx.coroutines.flow.StateFlow
+ import kotlinx.coroutines.flow.asStateFlow
+ import kotlinx.coroutines.launch
+ import kotlinx.coroutines.tasks.await
++import java.text.SimpleDateFormat
++import java.time.Instant
++import java.util.Locale
++import java.util.TimeZone
+ import java.util.UUID
+ 
+ /**
+@@ -443,29 +448,31 @@ class FirebaseUserRepository(
+             is java.util.Date -> value.time
+             is Number -> value.toLong()
+             is String -> {
+-                value.toLongOrNull() ?: try {
+-                    java.time.Instant.parse(value).toEpochMilli()
+-                } catch (_: Exception) {
+-                    null
+-                }
++                value.toLongOrNull() ?: parseIso8601ToEpochMilli(value)
+             }
+             else -> null
+         }
+     }
+ 
+     private fun parseTimestamp(value: Any?): Long {
+-        return when (value) {
+-            is com.google.firebase.Timestamp -> value.toDate().time
+-            is java.util.Date -> value.time
+-            is Number -> value.toLong()
+-            is String -> {
+-                value.toLongOrNull() ?: try {
+-                    java.time.Instant.parse(value).toEpochMilli()
+-                } catch (_: Exception) {
+-                    System.currentTimeMillis()
+-                }
++        return parseTimestampNullable(value) ?: System.currentTimeMillis()
++    }
++
++    private fun parseIso8601ToEpochMilli(value: String): Long? {
++        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
++            try {
++                Instant.parse(value).toEpochMilli()
++            } catch (_: Exception) {
++                null
++            }
++        } else {
++            try {
++                SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).apply {
++                    timeZone = TimeZone.getTimeZone("UTC")
++                }.parse(value)?.time
++            } catch (_: Exception) {
++                null
+             }
+-            else -> System.currentTimeMillis()
+         }
+     }
+ 
+diff --git a/gradle.properties b/gradle.properties
+index bf26ee5..cc6f229 100644
+--- a/gradle.properties
++++ b/gradle.properties
+@@ -26,3 +26,6 @@ org.gradle.workers.max=4
+ kotlin.compiler.execution.strategy=in-process
+ # Allow the google-services plugin to work even if the google-services.json is not present.
+ googleServices.missing.passthrough=true
++
++# Enabled parallel sync for Gradle 9.4+
++org.gradle.tooling.parallel=true
+diff --git a/gradle/libs.versions.toml b/gradle/libs.versions.toml
+index de4f376..c1b8a44 100644
+--- a/gradle/libs.versions.toml
++++ b/gradle/libs.versions.toml
+@@ -8,6 +8,7 @@ lifecycleRuntimeKtx = "2.8.7"
+ lifecycleViewmodelCompose = "2.8.7"
+ lifecycleRuntimeCompose = "2.8.7"
+ activityCompose = "1.10.1"
++fragment = "1.9.0"
+ kotlin = "2.2.10"
+ composeBom = "2024.09.00"
+ googleDevtoolsKsp = "2.3.5"
+@@ -54,6 +55,7 @@ androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecyc
+ androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
+ androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycleRuntimeCompose" }
+ androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
++androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "fragment" }
+ androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+ androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
+ androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }

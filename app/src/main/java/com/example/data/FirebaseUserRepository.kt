@@ -1,6 +1,7 @@
 package com.example.data
 
 import android.content.Context
+import android.os.Build
 import android.util.Log
 import com.example.AdminApplication
 import com.example.model.FirebaseConfigInfo
@@ -20,6 +21,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.text.SimpleDateFormat
+import java.time.Instant
+import java.util.Locale
+import java.util.TimeZone
 import java.util.UUID
 
 /**
@@ -443,29 +448,31 @@ class FirebaseUserRepository(
             is java.util.Date -> value.time
             is Number -> value.toLong()
             is String -> {
-                value.toLongOrNull() ?: try {
-                    java.time.Instant.parse(value).toEpochMilli()
-                } catch (_: Exception) {
-                    null
-                }
+                value.toLongOrNull() ?: parseIso8601ToEpochMilli(value)
             }
             else -> null
         }
     }
 
     private fun parseTimestamp(value: Any?): Long {
-        return when (value) {
-            is com.google.firebase.Timestamp -> value.toDate().time
-            is java.util.Date -> value.time
-            is Number -> value.toLong()
-            is String -> {
-                value.toLongOrNull() ?: try {
-                    java.time.Instant.parse(value).toEpochMilli()
-                } catch (_: Exception) {
-                    System.currentTimeMillis()
-                }
+        return parseTimestampNullable(value) ?: System.currentTimeMillis()
+    }
+
+    private fun parseIso8601ToEpochMilli(value: String): Long? {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            try {
+                Instant.parse(value).toEpochMilli()
+            } catch (_: Exception) {
+                null
             }
-            else -> System.currentTimeMillis()
+        } else {
+            try {
+                SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).apply {
+                    timeZone = TimeZone.getTimeZone("UTC")
+                }.parse(value)?.time
+            } catch (_: Exception) {
+                null
+            }
         }
     }
 
